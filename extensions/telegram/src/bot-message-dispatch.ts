@@ -17,10 +17,7 @@ import type {
   TelegramAccountConfig,
 } from "openclaw/plugin-sdk/config-types";
 import { formatErrorMessage } from "openclaw/plugin-sdk/error-runtime";
-import {
-  hasFinalInboundReplyDispatch,
-  runInboundReplyTurn,
-} from "openclaw/plugin-sdk/inbound-reply-dispatch";
+import { runInboundReplyTurn } from "openclaw/plugin-sdk/inbound-reply-dispatch";
 import {
   createOutboundPayloadPlan,
   projectOutboundPayloadPlanForDelivery,
@@ -1304,7 +1301,6 @@ export const dispatchTelegramMessage = async ({
   }
 
   if (
-    !queuedFinal &&
     !sentFallback &&
     !dispatchError &&
     !deliverySummary.delivered &&
@@ -1338,13 +1334,7 @@ export const dispatchTelegramMessage = async ({
     });
   }
 
-  const hasFinalResponse = hasFinalInboundReplyDispatch(
-    { queuedFinal },
-    {
-      fallbackDelivered: sentFallback || suppressSilentReplyFallback,
-      deliverySummaryDelivered: deliverySummary.delivered,
-    },
-  );
+  const hasFinalResponse = deliverySummary.delivered || sentFallback || suppressSilentReplyFallback;
 
   if (statusReactionController && !hasFinalResponse) {
     void finalizeTelegramStatusReaction({ outcome: "error", hasFinalResponse: false }).catch(
